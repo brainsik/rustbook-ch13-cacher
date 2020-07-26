@@ -48,12 +48,12 @@ mod tests {
 
     #[test]
     fn call_with_different_types() {
-        let mut c = Cacher::new(|a| a);
-        let result = c.value(1);
-        assert_eq!(result, 1);
-
-        let mut c = Cacher::new(|a: char| a.to_digit(16));
+        let mut c = Cacher::new(|a: char| a.is_ascii_alphanumeric());
         let result = c.value('a');
-        assert_eq!(result.unwrap(), 10);
+        assert_eq!(result, true);
+
+        let mut c = Cacher::new(|a: &str| a.len());
+        let result = c.value("hello");
+        assert_eq!(result, 5);
     }
 }
