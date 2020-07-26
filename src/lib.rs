@@ -1,25 +1,27 @@
 use std::collections::HashMap;
 
-struct Cacher<T>
+struct Cacher<T, U, V>
 where
-    T: Fn(u32) -> u32,
+    T: Fn(U) -> V,
 {
     calculation: T,
-    values: HashMap<u32, u32>,
+    values: HashMap<U, V>,
 }
 
-impl<T> Cacher<T>
+impl<T, U, V> Cacher<T, U, V>
 where
-    T: Fn(u32) -> u32,
+    T: Fn(U) -> V,
+    U: std::hash::Hash + Eq + Copy,
+    V: Copy,
 {
-    fn new(calculation: T) -> Cacher<T> {
+    fn new(calculation: T) -> Cacher<T, U, V> {
         Self {
             calculation,
             values: HashMap::new(),
         }
     }
 
-    fn value(&mut self, arg: u32) -> u32 {
+    fn value(&mut self, arg: U) -> V {
         match self.values.get(&arg) {
             Some(v) => *v,
             None => {
@@ -43,6 +45,15 @@ mod tests {
         let result = c.value(2);
         assert_eq!(result, 2);
     }
-}
 
-fn main() {}
+    #[test]
+    fn call_with_different_types() {
+        let mut c = Cacher::new(|a| a);
+        let result = c.value(1);
+        assert_eq!(result, 1);
+
+        let mut c = Cacher::new(|a: char| a.to_digit(16));
+        let result = c.value('a');
+        assert_eq!(result.unwrap(), 10);
+    }
+}
